@@ -92,7 +92,7 @@ function controle_declarer_tables_objets_sql($tables) {
 			'id_objet'      => "bigint(21) NOT NULL default 0",
 			'gravite'       => "varchar(1) DEFAULT 'e' NOT NULL",
 			'type_anomalie' => "varchar(127) DEFAULT '' NOT NULL",
-			'statut'        => "varchar(10) DEFAULT '0' NOT NULL",
+			'statut'        => "varchar(10) DEFAULT 'publie' NOT NULL",
 			'parametres'    => "text DEFAULT '' NOT NULL",
 			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
 			'maj'           => "TIMESTAMP",
