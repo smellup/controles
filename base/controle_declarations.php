@@ -32,64 +32,10 @@ function contrib_declarer_tables_interfaces($interface) {
 
 
 /**
- * Déclaration des nouvelles tables de la base de données propres au plugin.
- *
- * Le plugin déclare trois nouvelles tables qui sont :
- *
- * - `spip_controles`, qui contient les contrôles possibles et leur activité.
- * - `spip_erreurs`, qui contient les erreurs détectées suite aux contrôles effectués.
- *
- * @pipeline declarer_tables_principales
- *
- * @param array $tables_principales
- *		Tableau global décrivant la structure des tables de la base de données
- * @return array
- *		Tableau fourni en entrée et mis à jour avec les nouvelles déclarations
- */
-function contrib_declarer_tables_principales($tables_principales) {
-
-	// Table spip_erreurs
-	$erreurs = array(
-		'id_erreur'     => 'bigint(21) NOT NULL',
-		'objet'         => 'varchar(25) NOT NULL default ""',
-		'id_objet'      => 'bigint(21) NOT NULL default 0',
-		'type_erreur'   => "varchar(127) DEFAULT '' NOT NULL",
-		'statut'        => "varchar(10) DEFAULT '0' NOT NULL",
-		'parametres'    => "text DEFAULT '' NOT NULL",
-		'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
-		'maj'           => 'TIMESTAMP',
-	);
-
-	$erreurs_cles = array(
-		'PRIMARY KEY'       => 'id_erreur',
-		'KEY objet'         => 'objet',
-		'KEY id_objet'      => 'id_objet',
-		'KEY type_erreur'   => 'type_erreur',
-	);
-
-	$tables_principales['spip_erreurs'] = array(
-		'field' => &$erreurs,
-		'key'   => &$erreurs_cles,
-	);
-
-	return $tables_principales;
-}
-/**
- * Déclaration des objets du plugin. Le plugin ajoute l'objet erreur de contrôle au travers de la
- * seule table `spip_erreurs`. Les contrôles ne sont pas matérialisés.
- *
- * L'objet taxon est défini comme une arborescence de taxons du règne au rang le plus petit dans le règne.
- * Les taxons de rang égal ou inférieur à l'espèce font aussi partie de cette table. Les champs principaux sont les
- * suivants :
- *        - `nom_scientifique` est le nom en latin. Il est unique pour un rang taxonomique donné.
- *        - `rang` taxonomique est une valeur parmi `kingdom`, `phylum`, `class`, `order`, `family`, `genus`, `species`...
- *        - `nom_commun` est le nom vulgaire, si possible normalisé par une commission officielle. Il peut coïncider ou
- *           pas avec le nom vernaculaire.
- *        - `auteur` est une information composée d'un ou plusieurs noms complétés par une date (ex : Linneus, 1798).
- *        - `tsn` est l'identifiant numérique unique du taxon dans la base taxonomique ITIS.
- *        - `tsn_parent` permet de créer l'arborescence taxonomique du règne conformément à l'organisation de la base
- *        ITIS.
- *        - `espece` indique si oui ou non le taxon à un rang supérieur ou inférieur ou égal à `species`.
+ * Déclaration des objets du plugin.
+ * Le plugin ajoute :
+ * - l'objet contrôle (vérification automatique ou à la demande),
+ * - l'objet anomalie, produit des contrôles.
  *
  * @pipeline declarer_tables_objets_sql
  *
@@ -101,69 +47,95 @@ function contrib_declarer_tables_principales($tables_principales) {
  */
 function controle_declarer_tables_objets_sql($tables) {
 
-	$tables['spip_taxons'] = array(
-		'type' => 'taxon',
+	$tables['spip_controles'] = array(
+		'type' => 'controle',
 		'principale' => 'oui',
 		'field'=> array(
-			'id_taxon'          => "bigint(21) NOT NULL",
-			'nom_scientifique'	=> "varchar(35) DEFAULT '' NOT NULL",
-			'indicateurs'       => "varchar(32) DEFAULT '' NOT NULL",
-			'rang_taxon'		=> "varchar(15) DEFAULT '' NOT NULL",
-			'regne'				=> "varchar(10) DEFAULT '' NOT NULL",
-			'nom_commun'		=> "text DEFAULT '' NOT NULL",
-			'auteur'			=> "varchar(100) DEFAULT '' NOT NULL",
-			'descriptif'		=> "text DEFAULT '' NOT NULL",
-			'texte'             => "longtext DEFAULT '' NOT NULL",
-			'tsn'				=> "bigint(21) NOT NULL",
-			'tsn_parent'		=> "bigint(21) NOT NULL",
-			'sources'           => "text NOT NULL",
-			'importe'           => "varchar(3) DEFAULT 'non' NOT NULL",
-			'edite'             => "varchar(3) DEFAULT 'non' NOT NULL",
-			'espece'            => "varchar(3) DEFAULT 'non' NOT NULL",
-			'statut'            => "varchar(10) DEFAULT 'prop' NOT NULL",
-			'maj'				=> "TIMESTAMP"
-    ),
-		'key' => array(
-			'PRIMARY KEY' => 'id_taxon',
-            'KEY tsn'     => 'tsn',
-			'KEY statut'  => 'statut',
-			'KEY espece'  => 'espece',
-			'KEY importe' => 'importe',
-			'KEY edite'   => 'edite',
+			'id_controle'   => "bigint(21) NOT NULL",
+			'nom'           => "varchar(32) DEFAULT '' NOT NULL",
+			'descriptif'    => "text DEFAULT '' NOT NULL",
+			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
+			'maj'           => "TIMESTAMP",
 		),
-        'titre' => "nom_scientifique AS titre, '' AS lang",
+		'key' => array(
+			'PRIMARY KEY'   => 'id_controle',
+			'KEY objet'     => 'nom',
+		),
+        'titre' => "nom",
 
-        'champs_editables'  => array('nom_commun', 'descriptif', 'texte', 'sources'),
-        'champs_versionnes' => array('nom_commun', 'descriptif', 'texte', 'sources'),
-        'rechercher_champs' => array('nom_scientifique' => 10, 'nom_commun' => 10, 'auteur' => 2, 'descriptif' => 5, 'texte' => 5),
+        'champs_editables'  => array(),
+        'champs_versionnes' => array(),
+        'rechercher_champs' => array(),
+        'tables_jointures'  => array(),
+
+		// Textes standard
+		'texte_retour' 			=> '',
+		'texte_modifier' 		=> '',
+		'texte_creer' 			=> '',
+		'texte_creer_associer' 	=> '',
+		'texte_signale_edition' => '',
+		'texte_objet' 			=> '',
+		'texte_objets' 			=> '',
+		'info_aucun_objet'		=> '',
+		'info_1_objet' 			=> '',
+		'info_nb_objets' 		=> '',
+		'texte_logo_objet' 		=> '',
+	);
+
+	$tables['spip_anomalies'] = array(
+		'type' => 'anomalie',
+		'principale' => 'oui',
+		'field'=> array(
+			'id_anomalie'   => "bigint(21) NOT NULL",
+			'id_controle'   => "bigint(21) NOT NULL",
+			'objet'         => "varchar(25) NOT NULL default ''",
+			'id_objet'      => "bigint(21) NOT NULL default 0",
+			'gravite'       => "varchar(1) DEFAULT 'e' NOT NULL",
+			'type_anomalie' => "varchar(127) DEFAULT '' NOT NULL",
+			'statut'        => "varchar(10) DEFAULT '0' NOT NULL",
+			'parametres'    => "text DEFAULT '' NOT NULL",
+			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
+			'maj'           => "TIMESTAMP",
+		),
+		'key' => array(
+			'PRIMARY KEY'       => 'id_erreur',
+			'KEY objet'         => 'objet',
+			'KEY id_objet'      => 'id_objet',
+			'KEY type_erreur'   => 'type_erreur',
+		),
+        'titre' => 'gravite-type_erreur : id_erreur',
+
+        'champs_editables'  => array(),
+        'champs_versionnes' => array(),
+        'rechercher_champs' => array(),
         'tables_jointures'  => array(),
         'statut_textes_instituer' => array(
-            'prop'     => 'taxon:texte_statut_prop',
-            'publie'   => 'taxon:texte_statut_publie',
-            'poubelle' => 'taxon:texte_statut_poubelle',
+            'publie'   => 'anomalie:texte_statut_publie',
+            'corrige'  => 'anomalie:texte_statut_corrige',
+            'poubelle' => 'anomalie:texte_statut_poubelle',
         ),
         'statut'=> array(
             array(
                 'champ'     => 'statut',
                 'publie'    => 'publie',
-                'previsu'   => 'publie,prop',
+                'previsu'   => 'publie',
                 'exception' => array('statut', 'tout')
             )
         ),
-        'texte_changer_statut' => 'taxon:texte_changer_statut_taxon',
+        'texte_changer_statut' => 'anomalie:texte_changer_statut_anomalie',
 
 		// Textes standard
-		'texte_retour' 			=> 'icone_retour',
-		'texte_modifier' 		=> 'taxon:icone_modifier_taxon',
-		'texte_creer' 			=> 'taxon:icone_creer_taxon',
+		'texte_retour' 			=> '',
+		'texte_modifier' 		=> '',
+		'texte_creer' 			=> '',
 		'texte_creer_associer' 	=> '',
 		'texte_signale_edition' => '',
-		'texte_objet' 			=> 'taxon:titre_taxon',
-		'texte_objets' 			=> 'taxon:titre_taxons',
-		'info_aucun_objet'		=> 'taxon:info_aucun_taxon',
-		'info_1_objet' 			=> 'taxon:info_1_taxon',
-		'info_nb_objets' 		=> 'taxon:info_nb_taxons',
-		'texte_logo_objet' 		=> 'taxon:titre_logo_taxon',
+		'texte_objet' 			=> 'anomalie:titre_taxon',
+		'texte_objets' 			=> 'anomalie:titre_taxons',
+		'info_aucun_objet'		=> 'anomalie:info_aucun_taxon',
+		'info_1_objet' 			=> 'anomalie:info_1_taxon',
+		'info_nb_objets' 		=> 'anomalie:info_nb_taxons',
+		'texte_logo_objet' 		=> '',
 	);
 
 	return $tables;
