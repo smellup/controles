@@ -59,7 +59,7 @@ function controle_declarer_tables_objets_sql($tables) {
 		),
 		'key' => array(
 			'PRIMARY KEY'   => 'id_controle',
-			'KEY objet'     => 'nom',
+			'KEY nom'       => 'nom',
 		),
         'titre' => "nom",
 
@@ -87,7 +87,7 @@ function controle_declarer_tables_objets_sql($tables) {
 		'principale' => 'oui',
 		'field'=> array(
 			'id_anomalie'   => "bigint(21) NOT NULL",
-			'id_controle'   => "bigint(21) NOT NULL",
+			'id_controle'   => "bigint(21) NOT NULL default 0",
 			'objet'         => "varchar(25) NOT NULL default ''",
 			'id_objet'      => "bigint(21) NOT NULL default 0",
 			'gravite'       => "varchar(1) DEFAULT 'e' NOT NULL",
@@ -98,10 +98,11 @@ function controle_declarer_tables_objets_sql($tables) {
 			'maj'           => "TIMESTAMP",
 		),
 		'key' => array(
-			'PRIMARY KEY'       => 'id_erreur',
+			'PRIMARY KEY'       => 'id_anomalie',
+			'KEY id_controle'   => 'id_controle',
 			'KEY objet'         => 'objet',
 			'KEY id_objet'      => 'id_objet',
-			'KEY type_erreur'   => 'type_erreur',
+			'KEY type_anomalie' => 'type_anomalie',
 		),
         'titre' => 'gravite-type_erreur : id_erreur',
 
