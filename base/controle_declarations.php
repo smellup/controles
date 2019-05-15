@@ -131,11 +131,11 @@ function controle_declarer_tables_objets_sql($tables) {
 		'texte_creer' 			=> '',
 		'texte_creer_associer' 	=> '',
 		'texte_signale_edition' => '',
-		'texte_objet' 			=> 'anomalie:titre_taxon',
-		'texte_objets' 			=> 'anomalie:titre_taxons',
-		'info_aucun_objet'		=> 'anomalie:info_aucun_taxon',
-		'info_1_objet' 			=> 'anomalie:info_1_taxon',
-		'info_nb_objets' 		=> 'anomalie:info_nb_taxons',
+		'texte_objet' 			=> 'anomalie:titre_anomalie',
+		'texte_objets' 			=> 'anomalie:titre_anomalies',
+		'info_aucun_objet'		=> 'anomalie:info_aucun_anomalie',
+		'info_1_objet' 			=> 'anomalie:info_1_anomalie',
+		'info_nb_objets' 		=> 'anomalie:info_nb_anomalie',
 		'texte_logo_objet' 		=> '',
 	);
 
