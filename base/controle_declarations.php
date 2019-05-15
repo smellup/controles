@@ -5,36 +5,8 @@ if (!defined('_ECRIRE_INC_VERSION')) {
 }
 
 /**
- * Déclaration des informations tierces (alias, traitements, jointures, etc)
- * sur les tables de la base de données modifiées ou ajoutées par le plugin.
- *
- * Le plugin se contente de déclarer les alias des tables et quelques traitements.
- *
- * @pipeline declarer_tables_interfaces
- *
- * @param array $interface
- * 		Tableau global des informations tierces sur les tables de la base de données
- * @return array
- *		Tableau fourni en entrée et mis à jour avec les nouvelles informations
- */
-function contrib_declarer_tables_interfaces($interface) {
-
-	// Les tables : permet d'appeler une boucle avec le *type* de la table uniquement
-	$interface['table_des_tables']['controles'] = 'controles';
-	$interface['table_des_tables']['anomalies'] = 'anomalies';
-
-	// Les traitements
-	// - table spip_controles : on desérialise les tableaux
-	$interface['table_des_traitements']['PARAMETRES']['anomalies'] = 'unserialize(%s)';
-
-	return $interface;
-}
-
-
-/**
  * Déclaration des objets du plugin.
  * Le plugin ajoute :
- * - l'objet contrôle (vérification automatique ou à la demande),
  * - l'objet anomalie, produit des contrôles.
  *
  * @pipeline declarer_tables_objets_sql
@@ -104,36 +76,83 @@ function controle_declarer_tables_objets_sql($tables) {
 		'texte_logo_objet' 		=> '',
 	);
 
+	$tables['spip_controles'] = array(
+		'type' => 'controle',
+		'principale' => 'oui',
+		'field'=> array(
+			'id_controle'   => "bigint(21) NOT NULL",
+			'titre'         => "text DEFAULT '' NOT NULL",
+			'descriptif'    => "text DEFAULT '' NOT NULL",
+			'type_controle' => "varchar(255) NOT NULL",
+			'periode'       => "smallint DEFAULT 0 NOT NULL",
+			'statut'        => "varchar(10) DEFAULT 'active' NOT NULL",
+			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
+			'signature'     => "varchar(32) DEFAULT '' NOT NULL",
+			'maj'           => "TIMESTAMP",
+		),
+		'key' => array(
+			'PRIMARY KEY'   => 'type_controle',
+		),
+        'titre' => 'titre',
+
+        'champs_editables'  => array(),
+        'champs_versionnes' => array(),
+        'rechercher_champs' => array(),
+        'tables_jointures'  => array(),
+        'statut_textes_instituer' => array(
+            'active'    => 'controle:texte_statut_active',
+            'desactive' => 'controle:texte_statut_desactive',
+        ),
+        'statut'=> array(
+            array(
+                'champ'     => 'statut',
+                'publie'    => 'active',
+                'previsu'   => 'active',
+                'exception' => array('statut', 'tout')
+            )
+        ),
+        'texte_changer_statut' => 'controle:texte_changer_statut_controle',
+
+		// Textes standard
+		'texte_retour' 			=> '',
+		'texte_modifier' 		=> '',
+		'texte_creer' 			=> '',
+		'texte_creer_associer' 	=> '',
+		'texte_signale_edition' => '',
+		'texte_objet' 			=> 'controle:titre_controle',
+		'texte_objets' 			=> 'controle:titre_controles',
+		'info_aucun_objet'		=> 'controle:info_aucun_controle',
+		'info_1_objet' 			=> 'controle:info_1_controle',
+		'info_nb_objets' 		=> 'controle:info_nb_controle',
+		'texte_logo_objet' 		=> '',
+	);
+
 	return $tables;
 }
 
+
 /**
- * Insertion dans le pipeline declarer_tables_auxiliaires.
- * Déclarer la table auxiliaire spip_controles.
- * 
- * @pipeline declarer_tables_auxiliaires
- * @param array $tables_auxiliaires
- * 		Déclarations des tables pour le compilateur
+ * Déclaration des informations tierces (alias, traitements, jointures, etc)
+ * sur les tables de la base de données modifiées ou ajoutées par le plugin.
+ *
+ * Le plugin se contente de déclarer les alias des tables et quelques traitements.
+ *
+ * @pipeline declarer_tables_interfaces
+ *
+ * @param array $interface
+ * 		Tableau global des informations tierces sur les tables de la base de données
  * @return array
- * 		Déclarations des tables pour le compilateur
+ *		Tableau fourni en entrée et mis à jour avec les nouvelles informations
  */
-function controle_declarer_tables_auxiliaires($tables_auxiliaires){	
+function contrib_declarer_tables_interfaces($interface) {
 
-	$controles = array(
-		'type_controle' => "bigint(21) NOT NULL",
-		'titre'         => "text DEFAULT '' NOT NULL",
-		'descriptif'    => "text DEFAULT '' NOT NULL",
-		'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
-		'maj'           => "TIMESTAMP",
-	);
-	$controles_key = array(
-		'PRIMARY KEY'   => 'type_controle',
-	);
+	// Les tables : permet d'appeler une boucle avec le *type* de la table uniquement
+	$interface['table_des_tables']['controles'] = 'controles';
+	$interface['table_des_tables']['anomalies'] = 'anomalies';
 
-	$tables_auxiliaires['spip_controles'] = array(
-		'field' => &$controles,
-		'key' => &$controles_key
-	);
-		
-	return $tables_auxiliaires;
+	// Les traitements
+	// - table spip_controles : on desérialise les tableaux
+	$interface['table_des_traitements']['PARAMETRES']['anomalies'] = 'unserialize(%s)';
+
+	return $interface;
 }
