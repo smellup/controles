@@ -47,41 +47,6 @@ function contrib_declarer_tables_interfaces($interface) {
  */
 function controle_declarer_tables_objets_sql($tables) {
 
-	$tables['spip_controles'] = array(
-		'type' => 'controle',
-		'principale' => 'oui',
-		'field'=> array(
-			'id_controle'   => "bigint(21) NOT NULL",
-			'nom'           => "varchar(32) DEFAULT '' NOT NULL",
-			'descriptif'    => "text DEFAULT '' NOT NULL",
-			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
-			'maj'           => "TIMESTAMP",
-		),
-		'key' => array(
-			'PRIMARY KEY'   => 'id_controle',
-			'KEY nom'       => 'nom',
-		),
-        'titre' => "nom",
-
-        'champs_editables'  => array(),
-        'champs_versionnes' => array(),
-        'rechercher_champs' => array(),
-        'tables_jointures'  => array(),
-
-		// Textes standard
-		'texte_retour' 			=> '',
-		'texte_modifier' 		=> '',
-		'texte_creer' 			=> '',
-		'texte_creer_associer' 	=> '',
-		'texte_signale_edition' => '',
-		'texte_objet' 			=> '',
-		'texte_objets' 			=> '',
-		'info_aucun_objet'		=> '',
-		'info_1_objet' 			=> '',
-		'info_nb_objets' 		=> '',
-		'texte_logo_objet' 		=> '',
-	);
-
 	$tables['spip_anomalies'] = array(
 		'type' => 'anomalie',
 		'principale' => 'oui',
@@ -140,4 +105,35 @@ function controle_declarer_tables_objets_sql($tables) {
 	);
 
 	return $tables;
+}
+
+/**
+ * Insertion dans le pipeline declarer_tables_auxiliaires.
+ * Déclarer la table auxiliaire spip_controles.
+ * 
+ * @pipeline declarer_tables_auxiliaires
+ * @param array $tables_auxiliaires
+ * 		Déclarations des tables pour le compilateur
+ * @return array
+ * 		Déclarations des tables pour le compilateur
+ */
+function controle_declarer_tables_auxiliaires($tables_auxiliaires){	
+
+	$controles = array(
+		'type_controle' => "bigint(21) NOT NULL",
+		'titre'         => "text DEFAULT '' NOT NULL",
+		'descriptif'    => "text DEFAULT '' NOT NULL",
+		'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
+		'maj'           => "TIMESTAMP",
+	);
+	$controles_key = array(
+		'PRIMARY KEY'   => 'type_controle',
+	);
+
+	$tables_auxiliaires['spip_controles'] = array(
+		'field' => &$controles,
+		'key' => &$controles_key
+	);
+		
+	return $tables_auxiliaires;
 }
