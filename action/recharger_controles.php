@@ -8,7 +8,7 @@ if (!defined('_ECRIRE_INC_VERSION')) return;
 
 /**
  * Cette action permet à l'utilisateur de recharger en base de données, de façon sécurisée,
- * les types de noisette à partir de leur fichier YAML.
+ * les types de noisette à partir de leur fichier JSON.
  *
  * Cette action est réservée aux utilisateurs pouvant utiliser le noiZetier.
  * Elle ne nécessite aucun argument.
@@ -30,5 +30,5 @@ function action_recharger_controles_dist() {
 
 	// Rechargement des types de noisette : on force le recalcul complet, c'est le but.
 	include_spip('inc/controle');
-	controle_charger();
+	controle_charger(true);
 }

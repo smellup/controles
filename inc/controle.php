@@ -29,7 +29,7 @@ function controle_charger($recharger) {
 
 	// On recherche les contrôles directement par leur fichier YAML de configuration car il est
 	// obligatoire. La recherche s'effectue dans le path en utilisant le dossier relatif fourni.
-	if ($fichiers = find_all_in_path('controles/', '.+[.]yaml$')) {
+	if ($fichiers = find_all_in_path('controles/', '.+[.]json$')) {
 		// Initialisation des tableaux de types de noisette.
 		$controles_a_ajouter = $controles_a_changer = $controles_a_effacer = array();
 
@@ -37,38 +37,31 @@ function controle_charger($recharger) {
 		// - à gérer l'activité des types en fin de chargement
 		// - de comparer les signatures md5 des noisettes déjà enregistrées. Si on force le rechargement il est inutile
 		//   de gérer les signatures et les noisettes modifiées ou obsolètes.
-		$controles_existants = ncore_type_noisette_lister($plugin, '', $stockage);
+		$controles_existants = controle_lister();
 		$signatures = array();
 		if (!$recharger) {
-			$signatures = array_column($controless_existantes, 'signature', 'type_noisette');
+			$signatures = array_column($controles_existants, 'signature', 'type_controle');
 			// On initialise la liste des types de noisette à supprimer avec l'ensemble des types de noisette déjà stockés.
 			$controles_a_effacer = $signatures ? array_keys($signatures) : array();
 		}
 
 		foreach ($fichiers as $_squelette => $_chemin) {
-			$type_noisette = basename($_squelette, '.yaml');
+			$type_controle = basename($_squelette, '.json');
 			// Si on a forcé le rechargement ou si aucun md5 n'est encore stocké pour le type de noisette
 			// on positionne la valeur du md5 stocké à chaine vide.
 			// De cette façon, on force la lecture du fichier YAML du type de noisette.
-			$md5_stocke = (isset($signatures[$type_noisette]) and !$recharger)
-				? $signatures[$type_noisette]
+			$md5_stocke = (isset($signatures[$type_controle]) and !$recharger)
+				? $signatures[$type_controle]
 				: '';
 
-			// Initialisation de la description par défaut du type de noisette
-			// -- on y inclut le plugin appelant et la signature
+			// Initialisation de la description par défaut du type de contrôle
 			$description_defaut = array(
-				'type_noisette' => $type_noisette,
-				'nom'           => $type_noisette,
+				'type_controle' => $type_controle,
+				'nom'           => $type_controle,
 				'description'   => '',
-				'icon'          => 'noisette-24.png',
-				'necessite'     => array(),
+				'periode'       => '',
 				'actif'         => 'oui',
-				'conteneur'     => 'non',
-				'contexte'      => array(),
-				'ajax'          => 'defaut',
-				'inclusion'     => 'defaut',
-				'parametres'    => array(),
-				'plugin'        => $plugin,
+				'date'          => date('Y-m-d h:s:i'),
 				'signature'     => '',
 			);
 
@@ -76,56 +69,15 @@ function controle_charger($recharger) {
 			// le contenu. Sinon, on passe au fichier suivant.
 			$md5 = md5_file($_chemin);
 			if ($md5 != $md5_stocke) {
-				include_spip('inc/yaml');
-				$description = yaml_decode_file($_chemin, array('include' => true));
+				// Lecture du fichier YAML.
+				lire_fichier($_chemin, $json);
 
-				// TODO : ne faudrait-il pas "valider" le fichier YAML ici ou alors lors du stockage ?
-				// Traitements des champs pouvant être soit une chaine soit un tableau
-				if (!empty($description['necessite']) and is_string($description['necessite'])) {
-					$description['necessite'] = array($description['necessite']);
-				}
-				if (!empty($description['contexte']) and is_string($description['contexte'])) {
-					$description['contexte'] = array($description['contexte']);
-				}
+				// Décodage du contenu JSON en structure de données PHP.
+				$description = json_decode($json, true);
 
-				// On repère les types de noisette qui nécessitent des plugins explicitement dans leur
-				// fichier de configuration :
-				// -- si un plugin nécessité est inactif, on indique le type de noisette comme inactif mais on l'inclut
-				//    dans la liste retournée.
-				// Rappel: si un type de noisette est incluse dans un plugin non actif elle ne sera pas détectée
-				//         lors du find_all_in_path() puisque le plugin n'est pas dans le path SPIP.
-				//         Ce n'est pas ce cas qui est traité ici.
-				if (!empty($description['necessite'])) {
-					foreach ($description['necessite'] as $_plugin_necessite) {
-						if (!defined('_DIR_PLUGIN_' . strtoupper($_plugin_necessite))) {
-							$description['actif'] = 'non';
-							break;
-						}
-					}
-				}
-
-				// Mise à jour du md5
 				$description['signature'] = $md5;
 				// Complétude de la description avec les valeurs par défaut
 				$description = array_merge($description_defaut, $description);
-				// Traitement spécifique d'un type de noisette conteneur : l'ajax et l'inclusion dynamique 
-				// ne sont pas autorisés et le contexte est défini lors de l'encapsulation.
-				if ($description['conteneur'] == 'oui') {
-					$description['contexte'] = array('aucun');
-					$description['ajax'] = 'non';
-					$description['inclusion'] = 'statique';
-				}
-				// Si le contexte est vide alors on le force à env pour éviter de traiter ce cas (contexte vide)
-				// lors de la compilation.
-				if (!$description['contexte']) {
-					$description['contexte'] = array('env');
-				}
-				// Sérialisation des champs 'necessite', 'contexte' et 'parametres' qui sont des tableaux
-				$description['necessite'] = serialize($description['necessite']);
-				$description['contexte'] = serialize($description['contexte']);
-				$description['parametres'] = serialize($description['parametres']);
-				// Complément spécifique au plugin utilisateur si nécessaire
-				$description = ncore_type_noisette_completer($plugin, $description, $stockage);
 
 				if (!$md5_stocke or $recharger) {
 					// Le type de noisette est soit nouveau soit on est en mode rechargement forcé:
@@ -136,31 +88,87 @@ function controle_charger($recharger) {
 					// => il faut mettre à jour le type de noisette.
 					$controles_a_changer[] = $description;
 					// => et il faut donc le supprimer de la liste de types de noisette obsolètes
-					$controles_a_effacer = array_diff($controles_a_effacer, array($type_noisette));
+					$controles_a_effacer = array_diff($controles_a_effacer, array($type_controle));
 				}
 			} else {
 				// Le type de noisette n'a pas changé et n'a donc pas été rechargé:
 				// => Il faut donc juste indiquer qu'il n'est pas obsolète.
-				$controles_a_effacer = array_diff($controles_a_effacer, array($type_noisette));
+				$controles_a_effacer = array_diff($controles_a_effacer, array($type_controle));
 			}
 		}
 
-		// Mise à jour du stockage des types de noisette si au moins un des 3 tableaux est non vide et que le chargement forcé
-		// n'est pas demandé ou si le chargement forcé a été demandé:
-		// -- Suppression des types de noisettes obsolètes ou de tous les types de noisettes si on est en mode rechargement forcé.
-		//    Pour permettre une optimisation du traitement en mode rechargement forcé on passe toujours le mode.
-		// -- Update des types de noisette modifiés.
-		// -- Insertion des nouveaux types de noisette.
-		if ($recharger
-		or (!$recharger and ($controles_a_ajouter or $controles_a_effacer or $controles_a_changer))) {
-			$controles = array('a_ajouter' => $controles_a_ajouter);
-			if (!$recharger) {
-				$controles['a_effacer'] = $controles_a_effacer;
-				$controles['a_changer'] = $controles_a_changer;
-			}
-			$retour = ncore_type_noisette_stocker($plugin, $controles, $recharger, $stockage);
+		// Mise à jour des contrôles en base de données :
+		// -- Suppression des contrôles obsolètes ou de tous les contrôles si on est en mode rechargement forcé.
+		// -- Update des contrôles modifiés.
+		// -- Insertion des nouveaux contrôles.
+
+		// Mise à jour de la table des contrôles
+		$from = 'spip_controles';
+		// -- Suppression des pages obsolètes ou de toute les pages non virtuelles si on est en mode
+		//    rechargement forcé.
+		if (sql_preferer_transaction()) {
+			sql_demarrer_transaction();
+		}
+		if ($controles_a_effacer) {
+			sql_delete($from, sql_in('type_controle', $controles_a_effacer));
+		} elseif ($forcer_chargement) {
+			sql_delete($from);
+		}
+		// -- Update des contrôels modifiés
+		if ($controles_a_changer) {
+			sql_replace_multi($from, $controles_a_changer);
+		}
+		// -- Insertion des nouveaux contrôles
+		if ($controles_a_ajouter) {
+			sql_insertq_multi($from, $controles_a_ajouter);
+		}
+		if (sql_preferer_transaction()) {
+			sql_terminer_transaction();
 		}
 	}
 
 	return $retour;
+}
+
+/**
+ * Renvoie l'information brute demandée pour l'ensemble des contrôles utilisés
+ * ou toute les descriptions si aucune information n'est explicitement demandée.
+ *
+ * @param string $information
+ *        Identifiant d'un champ de la description d'un contrôle.
+ *        Si l'argument est vide, la fonction renvoie les descriptions complètes et si l'argument est
+ *        un champ invalide la fonction renvoie un tableau vide.
+ *
+ * @return array
+ *        Tableau de la forme `[type_controle]  information ou description complète`. Les champs textuels
+ *        sont retournés en l'état, le timestamp `maj n'est pas fourni.
+ */
+function controle_lister($information = '') {
+
+	// Initialiser le tableau de sortie en cas d'erreur
+	$controles = array();
+
+	$from = 'spip_controles';
+	$trouver_table = charger_fonction('trouver_table', 'base');
+	$table = $trouver_table($from);
+	$champs = array_keys($table['field']);
+	if ($information) {
+		// Si une information précise est demandée on vérifie sa validité
+		$information_valide = in_array($information, $champs);
+		$select = array('type_controle', $information);
+	} else {
+		// Tous les champs sauf le timestamp 'maj' sont renvoyés.
+		$select = array_diff($champs, array('maj'));
+	}
+
+	if ((!$information or ($information and $information_valide))
+	and ($controles = sql_allfetsel($select, $from))) {
+		if ($information) {
+			$controles = array_column($controles, $information, 'type_controle');
+		} else {
+			$controles = array_column($controles, null, 'type_controle');
+		}
+	}
+
+	return $controles;
 }

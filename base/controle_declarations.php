@@ -24,7 +24,7 @@ function controle_declarer_tables_objets_sql($tables) {
 		'principale' => 'oui',
 		'field'=> array(
 			'id_anomalie'   => "bigint(21) NOT NULL",
-			'id_controle'   => "bigint(21) NOT NULL default 0",
+			'type_controle' => "varchar(255) NOT NULL default ''",
 			'objet'         => "varchar(25) NOT NULL default ''",
 			'id_objet'      => "bigint(21) NOT NULL default 0",
 			'gravite'       => "varchar(1) DEFAULT 'e' NOT NULL",
@@ -36,12 +36,16 @@ function controle_declarer_tables_objets_sql($tables) {
 		),
 		'key' => array(
 			'PRIMARY KEY'       => 'id_anomalie',
-			'KEY id_controle'   => 'id_controle',
+			'KEY type_controle' => 'type_controle',
 			'KEY objet'         => 'objet',
 			'KEY id_objet'      => 'id_objet',
 			'KEY type_anomalie' => 'type_anomalie',
 		),
-        'titre' => 'gravite-type_erreur : id_erreur',
+		'join'  => array(
+			'id_anomalie'   => 'id_anomalie',
+			'type_controle' => 'type_controle',
+		),
+        'titre' => 'gravite-type_erreur : id_anomalie',
 
         'champs_editables'  => array(),
         'champs_versionnes' => array(),
@@ -76,58 +80,40 @@ function controle_declarer_tables_objets_sql($tables) {
 		'texte_logo_objet' 		=> '',
 	);
 
-	$tables['spip_controles'] = array(
-		'type' => 'controle',
-		'principale' => 'oui',
-		'field'=> array(
-			'id_controle'   => "bigint(21) NOT NULL",
-			'titre'         => "text DEFAULT '' NOT NULL",
-			'descriptif'    => "text DEFAULT '' NOT NULL",
-			'type_controle' => "varchar(255) NOT NULL",
-			'periode'       => "smallint DEFAULT 0 NOT NULL",
-			'statut'        => "varchar(10) DEFAULT 'active' NOT NULL",
-			'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
-			'signature'     => "varchar(32) DEFAULT '' NOT NULL",
-			'maj'           => "TIMESTAMP",
-		),
-		'key' => array(
-			'PRIMARY KEY'   => 'type_controle',
-		),
-        'titre' => 'titre',
-
-        'champs_editables'  => array(),
-        'champs_versionnes' => array(),
-        'rechercher_champs' => array(),
-        'tables_jointures'  => array(),
-        'statut_textes_instituer' => array(
-            'active'    => 'controle:texte_statut_active',
-            'desactive' => 'controle:texte_statut_desactive',
-        ),
-        'statut'=> array(
-            array(
-                'champ'     => 'statut',
-                'publie'    => 'active',
-                'previsu'   => 'active',
-                'exception' => array('statut', 'tout')
-            )
-        ),
-        'texte_changer_statut' => 'controle:texte_changer_statut_controle',
-
-		// Textes standard
-		'texte_retour' 			=> '',
-		'texte_modifier' 		=> '',
-		'texte_creer' 			=> '',
-		'texte_creer_associer' 	=> '',
-		'texte_signale_edition' => '',
-		'texte_objet' 			=> 'controle:titre_controle',
-		'texte_objets' 			=> 'controle:titre_controles',
-		'info_aucun_objet'		=> 'controle:info_aucun_controle',
-		'info_1_objet' 			=> 'controle:info_1_controle',
-		'info_nb_objets' 		=> 'controle:info_nb_controle',
-		'texte_logo_objet' 		=> '',
-	);
-
 	return $tables;
+}
+
+/**
+ * Insertion dans le pipeline declarer_tables_auxiliaires.
+ * Déclarer la table auxiliaire spip_controles.
+ * 
+ * @pipeline declarer_tables_auxiliaires
+ * @param array $tables_auxiliaires
+ * 		Déclarations des tables pour le compilateur
+ * @return array
+ * 		Déclarations des tables pour le compilateur
+ */
+function controle_declarer_tables_auxiliaires($tables_auxiliaires){
+	
+	$controles = array(
+		'type_controle' => "varchar(255) NOT NULL",
+		'nom'           => "text DEFAULT '' NOT NULL",
+		'descriptif'    => "text DEFAULT '' NOT NULL",
+		'periode'       => "smallint DEFAULT 0 NOT NULL",
+		'actif'         => "varchar(3) DEFAULT 'oui' NOT NULL",
+		'date'          => "datetime DEFAULT '0000-00-00 00:00:00' NOT NULL",
+		'signature'     => "varchar(32) DEFAULT '' NOT NULL",
+		'maj'           => "TIMESTAMP",
+	);
+	$controles_key = array(
+		'PRIMARY KEY'   => 'type_controle',
+	);
+	$tables_auxiliaires['spip_controles'] = array(
+		'field' => &$controles,
+		'key' => &$controles_key
+	);
+		
+	return $tables_auxiliaires;
 }
 
 
