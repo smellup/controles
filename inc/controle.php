@@ -111,7 +111,7 @@ function controle_charger($recharger) {
 		}
 		if ($controles_a_effacer) {
 			sql_delete($from, sql_in('type_controle', $controles_a_effacer));
-		} elseif ($forcer_chargement) {
+		} elseif ($recharger) {
 			sql_delete($from);
 		}
 		// -- Update des contrôels modifiés
