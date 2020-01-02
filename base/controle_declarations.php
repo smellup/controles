@@ -25,6 +25,7 @@ function controle_declarer_tables_objets_sql($tables) {
 		'field'      => array(
 			'id_controle'   => 'bigint(21) NOT NULL',
 			'fonction'      => 'varchar(255) NOT NULL',
+			'groupe'        => 'varchar(255) NOT NULL',
 			'type_controle' => 'varchar(255) NOT NULL',
 			'nom'           => "text DEFAULT '' NOT NULL",
 			'descriptif'    => "text DEFAULT '' NOT NULL",
@@ -110,17 +111,17 @@ function controle_declarer_tables_objets_sql($tables) {
 		),
 		'texte_changer_statut'    => 'anomalie:texte_changer_statut_anomalie',
 		// Textes standard
-		'texte_retour' 			  => '',
-		'texte_modifier' 		  => '',
-		'texte_creer' 			  => '',
-		'texte_creer_associer' 	  => '',
-		'texte_signale_edition'   => '',
-		'texte_objet' 			  => 'anomalie:titre_anomalie',
-		'texte_objets' 			  => 'anomalie:titre_anomalies',
-		'info_aucun_objet'		  => 'anomalie:info_aucun_anomalie',
-		'info_1_objet' 			  => 'anomalie:info_1_anomalie',
-		'info_nb_objets' 		  => 'anomalie:info_nb_anomalie',
-		'texte_logo_objet' 		  => '',
+		'texte_retour'          => '',
+		'texte_modifier'        => '',
+		'texte_creer'           => '',
+		'texte_creer_associer'  => '',
+		'texte_signale_edition' => '',
+		'texte_objet'           => 'anomalie:titre_anomalie',
+		'texte_objets'          => 'anomalie:titre_anomalies',
+		'info_aucun_objet'      => 'anomalie:info_aucun_anomalie',
+		'info_1_objet'          => 'anomalie:info_1_anomalie',
+		'info_nb_objets'        => 'anomalie:info_nb_anomalie',
+		'texte_logo_objet'      => '',
 	);
 
 	return $tables;
