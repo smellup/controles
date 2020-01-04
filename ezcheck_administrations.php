@@ -14,9 +14,6 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  *
  * @api
  *
- * @see ezcheck_declarer_tables_principales()
- * @see ezcheckdeclarer_tables_interfaces()
- *
  * @param string $nom_meta_base_version Nom de la meta dans laquelle sera rangée la version du schéma
  * @param string $version_cible         Version du schéma de données en fin d'upgrade
  *
@@ -27,7 +24,7 @@ function ezcheck_upgrade($nom_meta_base_version, $version_cible) {
 
 	// Création des tables
 	$maj['create'] = array(
-		array('maj_tables', array('spip_controles', 'spip_anomalies')),
+		array('maj_tables', array('spip_types_controles', 'spip_controles', 'spip_anomalies')),
 	);
 
 	include_spip('base/upgrade');
@@ -49,6 +46,7 @@ function ezcheck_vider_tables($nom_meta_base_version) {
 	// On efface les jobs associés aux contrôles (spip_jobs et spip_jobs_liens)
 
 	// On efface les tables des contrôles et anomalies
+	sql_drop_table('spip_types_controles');
 	sql_drop_table('spip_controles');
 	sql_drop_table('spip_anomalies');
 

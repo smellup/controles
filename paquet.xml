@@ -15,5 +15,6 @@
 	<licence lien="http://www.gnu.org/licenses/gpl-3.0.html">GPL 3</licence>
 
 	<pipeline nom="declarer_tables_objets_sql" inclure="base/ezcheck_declarations.php" />
+	<pipeline nom="declarer_tables_principales" inclure="base/ezcheck_declarations.php" />
 	<pipeline nom="declarer_tables_interfaces" inclure="base/ezcheck_declarations.php" />
 </paquet>

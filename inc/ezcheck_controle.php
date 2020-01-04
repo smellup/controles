@@ -7,10 +7,10 @@ if (!defined('_ECRIRE_INC_VERSION')) {
 }
 
 /**
- * Charge ou recharge les descriptions des contrôles à partir des fichiers YAML.
+ * Charge ou recharge les descriptions des contrôles à partir des fichiers YAML/JSON.
  * La fonction optimise le chargement en effectuant uniquement les traitements nécessaires
  * en fonction des modifications, ajouts et suppressions des contrôles identifiés
- * en comparant les md5 des fichiers YAML.
+ * en comparant les md5 des fichiers YAML/JSON.
  *
  * @api
  *
@@ -30,23 +30,23 @@ function controle_charger($recharger) {
 		// Initialisation des tableaux de types de noisette.
 		$controles_a_ajouter = $controles_a_changer = $controles_a_effacer = array();
 
-		// Récupération de la description complète des types de noisette déjà enregistrés de façon :
+		// Récupération de la description complète des contrôles déjà enregistrés de façon :
 		// - à gérer l'activité des types en fin de chargement
 		// - de comparer les signatures md5 des noisettes déjà enregistrées. Si on force le rechargement il est inutile
-		//   de gérer les signatures et les noisettes modifiées ou obsolètes.
+		//   de gérer les signatures et les contrôles modifiés ou obsolètes.
 		$controles_existants = controle_lister();
 		$signatures = array();
 		if (!$recharger) {
 			$signatures = array_column($controles_existants, 'signature', 'type_controle');
-			// On initialise la liste des types de noisette à supprimer avec l'ensemble des types de noisette déjà stockés.
+			// On initialise la liste des contrôles à supprimer avec l'ensemble des contrôles déjà stockés.
 			$controles_a_effacer = $signatures ? array_keys($signatures) : array();
 		}
 
 		foreach ($fichiers as $_squelette => $_chemin) {
 			$type_controle = basename($_squelette, '.json');
-			// Si on a forcé le rechargement ou si aucun md5 n'est encore stocké pour le type de noisette
+			// Si on a forcé le rechargement ou si aucun md5 n'est encore stocké pour le contrôle
 			// on positionne la valeur du md5 stocké à chaine vide.
-			// De cette façon, on force la lecture du fichier YAML du type de noisette.
+			// De cette façon, on force la lecture du fichier JSON/YAML du contrôle.
 			$md5_stocke = (isset($signatures[$type_controle]) and !$recharger)
 				? $signatures[$type_controle]
 				: '';
@@ -54,15 +54,16 @@ function controle_charger($recharger) {
 			// Initialisation de la description par défaut du type de contrôle
 			$description_defaut = array(
 				'type_controle' => $type_controle,
+				'fonction'      => 'php',
 				'nom'           => $type_controle,
 				'description'   => '',
+				'priorite'      => 0,
 				'periode'       => '',
 				'actif'         => 'oui',
-				'date'          => date('Y-m-d h:s:i'),
 				'signature'     => '',
 			);
 
-			// On vérifie que le md5 du fichier YAML est bien différent de celui stocké avant de charger
+			// On vérifie que le md5 du fichier JSON/YAML est bien différent de celui stocké avant de charger
 			// le contenu. Sinon, on passe au fichier suivant.
 			$md5 = md5_file($_chemin);
 			if ($md5 != $md5_stocke) {
