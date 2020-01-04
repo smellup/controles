@@ -8,7 +8,7 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  * Déclaration des objets du plugin.
  * Le plugin ajoute :
  * - l'objet contrôle qui correspond à une fonction lancée périodiquement ou à la demande.
- * - l'objet anomalie, produit des contrôles.
+ * - l'objet anomalie, qui résulte des contrôles.
  *
  * @pipeline declarer_tables_objets_sql
  *
@@ -16,7 +16,7 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  *
  * @return array Description des tables de la base complétée par celles du plugin.
  */
-function controle_declarer_tables_objets_sql($tables) {
+function ezcheck_declarer_tables_objets_sql($tables) {
 
 	// Table spip_controles, description des contrôles manuels ou périodiques
 	$tables['spip_controles'] = array(
@@ -24,9 +24,8 @@ function controle_declarer_tables_objets_sql($tables) {
 		'principale' => 'oui',
 		'field'      => array(
 			'id_controle'   => 'bigint(21) NOT NULL',
-			'fonction'      => 'varchar(255) NOT NULL',
-			'groupe'        => 'varchar(255) NOT NULL',
 			'type_controle' => 'varchar(255) NOT NULL',
+			'fonction'      => "varchar(255) DEFAULT '' NOT NULL",
 			'nom'           => "text DEFAULT '' NOT NULL",
 			'descriptif'    => "text DEFAULT '' NOT NULL",
 			'periode'       => 'smallint DEFAULT 0 NOT NULL',
@@ -48,17 +47,17 @@ function controle_declarer_tables_objets_sql($tables) {
 		'tables_jointures'        => array(),
 
 		// Textes standard
-		'texte_retour' 			      => '',
-		'texte_modifier' 		     => '',
-		'texte_creer' 			       => '',
-		'texte_creer_associer' 	=> '',
+		'texte_retour'          => '',
+		'texte_modifier'        => '',
+		'texte_creer'           => '',
+		'texte_creer_associer'  => '',
 		'texte_signale_edition' => '',
-		'texte_objet' 			       => 'controle:titre_controle',
-		'texte_objets' 			      => 'controle:titre_controles',
-		'info_aucun_objet'		    => 'controle:info_aucun_controle',
-		'info_1_objet' 			      => 'controle:info_1_controle',
-		'info_nb_objets' 		     => 'controle:info_nb_controle',
-		'texte_logo_objet' 		   => '',
+		'texte_objet'           => 'controle:titre_controle',
+		'texte_objets'          => 'controle:titre_controles',
+		'info_aucun_objet'      => 'controle:info_aucun_controle',
+		'info_1_objet'          => 'controle:info_1_controle',
+		'info_nb_objets'        => 'controle:info_nb_controle',
+		'texte_logo_objet'      => '',
 	);
 
 	// Table spip_anomalies, les résultats des contrôles
@@ -141,7 +140,7 @@ function controle_declarer_tables_objets_sql($tables) {
  * @return array
  *               Tableau fourni en entrée et mis à jour avec les nouvelles informations
  */
-function contrib_declarer_tables_interfaces($interface) {
+function ezcheck_declarer_tables_interfaces($interface) {
 
 	// Les tables : permet d'appeler une boucle avec le *type* de la table uniquement
 	$interface['table_des_tables']['controles'] = 'controles';

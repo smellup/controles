@@ -6,7 +6,6 @@ if (!defined('_ECRIRE_INC_VERSION')) {
 	return;
 }
 
-
 /**
  * Charge ou recharge les descriptions des contrôles à partir des fichiers YAML.
  * La fonction optimise le chargement en effectuant uniquement les traitements nécessaires
@@ -15,12 +14,10 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  *
  * @api
  *
- * @param bool   $recharger
- *        Si `true` force le rechargement de tous les types de noisette, sinon le chargement se base sur le
- *        md5 des fichiers YAML. Par défaut vaut `false`.
+ * @param bool $recharger Si `true` force le rechargement de tous les contrôles, sinon le chargement se base sur le
+ *                        md5 des fichiers YAML. Par défaut vaut `false`.
  *
- * @return bool
- *        `false` si une erreur s'est produite, `true` sinon.
+ * @return bool `false` si une erreur s'est produite, `true` sinon.
  */
 function controle_charger($recharger) {
 
@@ -134,14 +131,12 @@ function controle_charger($recharger) {
  * Renvoie l'information brute demandée pour l'ensemble des contrôles utilisés
  * ou toute les descriptions si aucune information n'est explicitement demandée.
  *
- * @param string $information
- *        Identifiant d'un champ de la description d'un contrôle.
- *        Si l'argument est vide, la fonction renvoie les descriptions complètes et si l'argument est
- *        un champ invalide la fonction renvoie un tableau vide.
+ * @param string $information Identifiant d'un champ de la description d'un contrôle.
+ *                            Si l'argument est vide, la fonction renvoie les descriptions complètes et si l'argument est
+ *                            un champ invalide la fonction renvoie un tableau vide.
  *
- * @return array
- *        Tableau de la forme `[type_controle]  information ou description complète`. Les champs textuels
- *        sont retournés en l'état, le timestamp `maj n'est pas fourni.
+ * @return array Tableau de la forme `[type_controle] = information ou description complète`. Les champs textuels
+ *               sont retournés en l'état, le timestamp `maj n'est pas fourni.
  */
 function controle_lister($information = '') {
 

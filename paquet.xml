@@ -1,19 +1,19 @@
 <paquet
-	prefix="controle"
+	prefix="ezcheck"
 	categorie="outil"
 	version="0.1.0"
 	etat="dev"
 	compatibilite="[3.2.0;3.2.*]"
-	logo="controle_logo-64.png"
+	logo="ezcheck_logo-64.png"
 	schema="1"
 >
-	<nom>Contrôles et anomalies</nom>
+	<nom>Check Factory</nom>
+	<!-- Faciliter la gestion de contrôles et d'anomalies -->
 
-	<auteur>Eric Lupinacci</auteur>
+	<auteur lien="http://blog.smellup.net/">Eric Lupinacci</auteur>
 
 	<licence lien="http://www.gnu.org/licenses/gpl-3.0.html">GPL 3</licence>
 
-	<pipeline nom="declarer_tables_objets_sql" inclure="base/controle_declarations.php" />
-	<pipeline nom="declarer_tables_auxiliaires" inclure="base/controle_declarations.php" />
-	<pipeline nom="declarer_tables_interfaces" inclure="base/controle_declarations.php" />
+	<pipeline nom="declarer_tables_objets_sql" inclure="base/ezcheck_declarations.php" />
+	<pipeline nom="declarer_tables_interfaces" inclure="base/ezcheck_declarations.php" />
 </paquet>

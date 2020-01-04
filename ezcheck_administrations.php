@@ -14,15 +14,15 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  *
  * @api
  *
- * @see controle_declarer_tables_principales()
- * @see controle_declarer_tables_interfaces()
+ * @see ezcheck_declarer_tables_principales()
+ * @see ezcheckdeclarer_tables_interfaces()
  *
  * @param string $nom_meta_base_version Nom de la meta dans laquelle sera rangée la version du schéma
  * @param string $version_cible         Version du schéma de données en fin d'upgrade
  *
  * @return void
  */
-function controle_upgrade($nom_meta_base_version, $version_cible) {
+function ezcheck_upgrade($nom_meta_base_version, $version_cible) {
 	$maj = array();
 
 	// Création des tables
@@ -44,7 +44,7 @@ function controle_upgrade($nom_meta_base_version, $version_cible) {
  *
  * @return void
  */
-function controle_vider_tables($nom_meta_base_version) {
+function ezcheck_vider_tables($nom_meta_base_version) {
 
 	// On efface les jobs associés aux contrôles (spip_jobs et spip_jobs_liens)
 
