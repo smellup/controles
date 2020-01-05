@@ -20,4 +20,5 @@
 	<pipeline nom="affiche_milieu" inclure="ezcheck_pipelines.php" />
 
 	<necessite nom="yaml" compatibilite="[2.0.7;[" />
+	<necessite nom="cache" compatibilite="[0.5.1;[" />
 </paquet>

@@ -7,26 +7,21 @@ if (!defined('_ECRIRE_INC_VERSION')) {
 }
 
 /**
- * Charge ou recharge les descriptions des types de contrôle à partir des fichiers YAML.
- * La fonction optimise le chargement en effectuant uniquement les traitements nécessaires
- * en fonction des modifications, ajouts et suppressions des contrôles identifiés
- * en comparant les md5 des fichiers YAML.
- *
- * @param bool $recharger Si `true` force le rechargement de tous les types de contrôles sinon le chargement se base
- *                        sur le md5 des fichiers YAML. Par défaut vaut `false`.
+ * Charge ou recharge la configuration des dashboards à partir de leur fichier YAML.
+ * La fonction compile les dashboards dans un cache unique sécurisé.
  *
  * @return bool `false` si une erreur s'est produite, `true` sinon.
  *@api
  *
  */
-function type_controle_charger($recharger = false) {
+function dashboard_charger() {
 
 	// Retour de la fonction
 	$retour = true;
 
 	// On recherche les contrôles directement par leur fichier YAML de configuration car il est
 	// obligatoire. La recherche s'effectue dans le path en utilisant le dossier relatif fourni.
-	if ($fichiers = find_all_in_path('ezcheck/controles/', '.+[.]yaml$')) {
+	if ($fichiers = find_all_in_path('ezcheck/dasboards', '.+[.]yaml$')) {
 		// Initialisation des tableaux de types de contrôle.
 		$types_controle_a_ajouter = $types_controle_a_changer = $types_controle_a_effacer = array();
 
@@ -46,7 +41,7 @@ function type_controle_charger($recharger = false) {
 			$type_controle = basename($_squelette, '.yaml');
 			// Si on a forcé le rechargement ou si aucun md5 n'est encore stocké pour le contrôle
 			// on positionne la valeur du md5 stocké à chaine vide.
-			// De cette façon, on force la lecture du fichier YAML du contrôle.
+			// De cette façon, on force la lecture du fichier JSON/YAML du contrôle.
 			$md5_stocke = (isset($signatures[$type_controle]) and !$recharger)
 				? $signatures[$type_controle]
 				: '';
@@ -64,7 +59,7 @@ function type_controle_charger($recharger = false) {
 				'signature'     => '',
 			);
 
-			// On vérifie que le md5 du fichier YAML est bien différent de celui stocké avant de charger
+			// On vérifie que le md5 du fichier JSON/YAML est bien différent de celui stocké avant de charger
 			// le contenu. Sinon, on passe au fichier suivant.
 			$md5 = md5_file($_chemin);
 			if ($md5 != $md5_stocke) {
@@ -138,32 +133,28 @@ function type_controle_charger($recharger = false) {
  * @return array Tableau de la forme `[type_controle] = information ou description complète`. Les champs textuels
  *               sont retournés en l'état, le timestamp `maj n'est pas fourni.
  */
-function type_controle_lister($information = '') {
+function dashboard_lister($information = '') {
 
 	// Initialiser le tableau de sortie en cas d'erreur
-	$types_controle = array();
+	$dashboards = $information ? '' : array();
 
-	$from = 'spip_types_controles';
-	$trouver_table = charger_fonction('trouver_table', 'base');
-	$table = $trouver_table($from);
-	$champs = array_keys($table['field']);
-	if ($information) {
-		// Si une information précise est demandée on vérifie sa validité
-		$information_valide = in_array($information, $champs);
-		$select = array('type_controle', $information);
-	} else {
-		// Tous les champs sauf le timestamp 'maj' sont renvoyés.
-		$select = array_diff($champs, array('maj'));
-	}
+	// Les dashboards sont stockées dans un cache sécurisé géré par Cache Factory.
+	// -- Initialisation de l'identifiant du cache des dashboards
+	$cache = array(
+		'nom' => 'dashboards',
+	);
 
-	if ((!$information or ($information and $information_valide))
-	and ($types_controle = sql_allfetsel($select, $from))) {
+	include_spip('inc/cache');
+	if ($descriptions = cache_lire('ezcheck', $cache)) {
 		if ($information) {
-			$types_controle = array_column($types_controle, $information, 'type_controle');
+			// Si $information n'est pas une colonne valide array_column retournera un tableau vide.
+			if ($informations = array_column($descriptions, $information, 'identifiant')) {
+				$dashboards = $informations;
+			}
 		} else {
-			$types_controle = array_column($types_controle, null, 'type_controle');
+			$dashboards = $descriptions;
 		}
 	}
 
-	return $types_controle;
+	return $dashboards;
 }
