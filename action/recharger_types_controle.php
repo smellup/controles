@@ -15,20 +15,20 @@ if (!defined('_ECRIRE_INC_VERSION')) return;
  *
  * @return void
  */
-function action_recharger_controles_dist() {
+function action_recharger_types_controle_dist() {
 
 	// Sécurisation.
 	// -- Aucun argument attendu.
 
-	// Verification des autorisations : pour recharger les noisettes il suffit
-	// d'avoir l'autorisation minimale d'accéder au noizetier.
+	// Verification des autorisations : pour recharger les types de contrôle il suffit
+	// d'avoir l'autorisation minimale d'accéder au contrôles de contrib.
 	if (!autoriser('webmestre')) {
 		include_spip('inc/minipres');
 		echo minipres();
 		exit();
 	}
 
-	// Rechargement des types de noisette : on force le recalcul complet, c'est le but.
-	include_spip('inc/controle');
-	controle_charger(true);
+	// Rechargement des types de contrôle : on force le recalcul complet, c'est le but.
+	include_spip('inc/ezcheck_type_controle');
+	type_controle_charger(true);
 }

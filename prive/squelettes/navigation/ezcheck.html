@@ -1,0 +1,12 @@
+[(#REM) <!-- Boite d'information sur la gestion des types de contrôle --> ]
+[#BOITE_OUVRIR{#CHEMIN_IMAGE{controle-24.png}|balise_img{'',cadre-icone}, info}
+	(#VAL{ezcheck:boite_info_message_type_controle}|_T)
+#BOITE_FERMER]
+
+#BOITE_OUVRIR{'','raccourcis'}
+	[(#REM) <!-- Inutile d'utiliser l'autorisation noizetier car l'autorisation des pages qui affichent
+	             ces boutons l'inclut déjà -->
+	]
+	[(#URL_ACTION_AUTEUR{recharger_types_controle, '', #SELF}
+		|icone_horizontale{<:ezcheck:recharger_types_controle:>, controle-maj-24, '', #LANG_LEFT})]
+#BOITE_FERMER

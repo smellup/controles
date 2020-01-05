@@ -1,0 +1,51 @@
+[(#AUTORISER{configurer}|sinon_interdire_acces)]
+<h1 class="grostitre">
+	<:ezcheck:types_controle_page_titre:>
+</h1>
+
+[(#SET{bulle_action,
+	#ARRAY{
+		oui, <:contrib:type_controle_desactiver:>,
+		non, <:contrib:type_controle_activer:>
+	}
+})]
+<ul class="liste-items liste-types_controle">
+<BOUCLE_types_controle(TYPES_CONTROLES) {par type_controle}>
+	<li class="item type_controle[ (#ACTIF|=={oui}|non)inactif]">
+		<div>
+			[(#REM) Informations de base sur la page ]
+			<div class="resume">
+				[(#REM) <!-- Inutile d'utiliser l'autorisation configurerpage car
+				             - l'autorisation noizetier est ok
+				             - les compositions ne sont pas affichées si le plugin Compositions est désactivé
+				             - et si la page est de type objet et dans la table spip_noisettes c'est forcément parce
+				               que le type d'objet est autorisé.
+				-->]
+				<span>[(#NOM)]</span>
+				<i>[ \((#TYPE_CONTROLE)\)]</i>
+				[<br />(#DESCRIPTION|ptobr|sinon{&nbsp;})]
+				[(#REM) Logo de la page ]
+				<div class="icone">
+					[(#CHEMIN_IMAGE{#CHAMP_SQL{icone}}|image_reduire{24}|extraire_attribut{src}|balise_img)]
+				</div>
+			</div>
+
+			[(#REM) Actions possibles sur le type de contrôle ]
+			<div class="edition">
+				[(#AUTORISER{webmestre})
+					[<a href="(#URL_ACTION_AUTEUR{inverser_activite_type_controle, #TYPE_CONTROLE:#ACTIF, #SELF})"[
+						title="(#GET{bulle_action/#ACTIF})"]>
+						[<img height="24" width="24" src="(#CHEMIN_IMAGE{[controle_actif_(#ACTIF)-24.png]})" alt="" />]
+					</a>]
+				]
+			</div>
+		</div>
+	</li>
+</BOUCLE_types_controle>
+</ul>
+</B_types_controle>
+#BOITE_OUVRIR{'','notice'}
+	<:ezcheck:type_controle_aucun_disponible:>
+#BOITE_FERMER
+<//B_types_controle>
+

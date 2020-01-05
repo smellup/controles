@@ -23,7 +23,8 @@ function ezcheck_declarer_tables_principales($tables_principales) {
 		'type_controle' => "varchar(255) DEFAULT '' NOT NULL",  // Identifiant du type de contrôle (nom du fichier)
 		'fonction'      => "varchar(4) DEFAULT 'php' NOT NULL", // Indique la nature du contrôle : 'php' (génère des anomalies), html (pas d'anomalie, état des lieux via un squelette HTML)
 		'nom'           => "text DEFAULT '' NOT NULL",          // Nom littéral du contrôle
-		'descriptif'    => "text DEFAULT '' NOT NULL",          // Description du contrôle
+		'description'   => "text DEFAULT '' NOT NULL",          // Description du contrôle
+		'icone'         => "varchar(255) DEFAULT '' NOT NULL",  // Fichier image sans chemin représentatif du type de contrôle
 		'periode'       => 'smallint DEFAULT 0 NOT NULL',       // Période en seconde d'activation du contrôle
 		'priorite'      => 'smallint(6) DEFAULT 0 NOT NULL',    // Priorité de traitement du contrôle (génie)
 		'actif'         => "varchar(3) DEFAULT 'oui' NOT NULL", // Indicateur d'activité du contrôle. Si 'non', aucun contrôle de ce type ne peut être réalisé
@@ -185,8 +186,11 @@ function ezcheck_declarer_tables_interfaces($interface) {
 	$interface['table_des_tables']['anomalies'] = 'anomalies';
 
 	// Les traitements
-	// - table spip_controles : on desérialise les tableaux
+	// - table spip_anomalies : on desérialise les tableaux
 	$interface['table_des_traitements']['PARAMETRES']['anomalies'] = 'unserialize(%s)';
+	// - table spip_types_controles : on passe typo pour afficher le nom et la description
+	$interface['table_des_traitements']['NOM']['types_controles'] = 'typo(%s)';
+	$interface['table_des_traitements']['DESCRIPTION']['types_controles'] = 'typo(%s)';
 
 	return $interface;
 }
