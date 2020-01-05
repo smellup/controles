@@ -17,6 +17,7 @@
 	<pipeline nom="declarer_tables_objets_sql" inclure="base/ezcheck_declarations.php" />
 	<pipeline nom="declarer_tables_principales" inclure="base/ezcheck_declarations.php" />
 	<pipeline nom="declarer_tables_interfaces" inclure="base/ezcheck_declarations.php" />
+	<pipeline nom="affiche_milieu" inclure="ezcheck_pipelines.php" />
 
 	<necessite nom="yaml" compatibilite="[2.0.7;[" />
 </paquet>

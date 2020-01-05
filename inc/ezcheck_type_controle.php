@@ -19,7 +19,7 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  *@api
  *
  */
-function type_controle_charger($recharger) {
+function type_controle_charger($recharger = false) {
 
 	// Retour de la fonction
 	$retour = true;
