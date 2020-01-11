@@ -10,9 +10,11 @@ if (!defined('_ECRIRE_INC_VERSION')) {
  * Charge ou recharge la configuration des dashboards à partir de leur fichier YAML.
  * La fonction compile les dashboards dans un cache unique sécurisé.
  *
- * @return bool `false` si une erreur s'est produite, `true` sinon.
- *@api
+ * @api
  *
+ * @param bool $recharger
+ *
+ * @return bool `false` si une erreur s'est produite, `true` sinon.
  */
 function dashboard_charger($recharger = false) {
 
@@ -21,7 +23,7 @@ function dashboard_charger($recharger = false) {
 
 	// On recherche les dashboards directement par leur fichier YAML de configuration car il est
 	// obligatoire. La recherche s'effectue dans le path en utilisant le dossier relatif fourni.
-	if ($fichiers = find_all_in_path('ezcheck/dashboards/', '.+[.]yaml$')) {
+	if ($fichiers = find_all_in_path('ezcheck/dashboards/', '.+[.](yaml|json)$')) {
 		// Initialisation du tableau des dashboard
 		$dashboards = array();
 
@@ -30,9 +32,12 @@ function dashboard_charger($recharger = false) {
 		//   de gérer les signatures et les contrôles modifiés ou obsolètes.
 		$dashboards_existants = !$recharger ? dashboard_lister() : array();
 
-		foreach ($fichiers as $_squelette => $_chemin) {
+		foreach ($fichiers as $_config => $_chemin) {
+			// Détermination de l'exension du fichier json ou yaml.
+			$extension = pathinfo($_config, PATHINFO_EXTENSION);
+
 			// L'identifiant du dashboard est son nom de fichier sans extension
-			$dashboard_id = basename($_squelette, '.yaml');
+			$dashboard_id = basename($_config, ".${extension}");
 
 			// Initialisation de la description par défaut du type de contrôle
 			$description_defaut = array(
@@ -56,13 +61,26 @@ function dashboard_charger($recharger = false) {
 			// le contenu. Sinon, on passe au fichier suivant.
 			$md5 = md5_file($_chemin);
 			if ($md5 != $md5_stocke) {
-				// Lecture et décodage du fichier YAML en structure de données PHP.
-				include_spip('inc/yaml');
-				$description = yaml_decode_file($_chemin, array('include' => false));
+				// Lecture et décodage du fichier YAML ou JSON en structure de données PHP.
+				if ($extension == 'json') {
+					include_spip('inc/flock');
+					lire_fichier($_chemin, $dashboard_contenu);
+					$description = json_decode($dashboard_contenu, true);
+				} else {
+					include_spip('inc/yaml');
+					$description = yaml_decode_file($_chemin, array('include' => false));
+				}
 
 				$description['signature'] = $md5;
 				// Complétude de la description avec les valeurs par défaut
 				$description = array_merge($description_defaut, $description);
+
+				// On reformate le tableau des groupes pour que l'index soit l'identifiant
+				$groupes = array();
+				foreach ($description['groupes'] as $_groupe) {
+					$groupes[$_groupe['identifiant']] = $_groupe;
+				}
+				$description['groupes'] = $groupes;
 
 				// On ajoute le dashboard nouveau ou modifié
 				$dashboards[$dashboard_id] = $description;
@@ -79,14 +97,14 @@ function dashboard_charger($recharger = false) {
 		$cache = array(
 			'nom' => 'dashboards',
 		);
-
-		// Ecriture du cache sécurisé
-		cache_ecrire('ezcheck', $cache, $dashboards);
+		// -- Encodage du contenu en JSON
+		$contenu = json_encode($dashboards, true);
+		// -- Ecriture du cache sécurisé
+		cache_ecrire('ezcheck', $cache, $contenu);
 	}
 
 	return $retour;
 }
-
 
 /**
  * Renvoie l'information brute demandée pour l'ensemble des contrôles utilisés

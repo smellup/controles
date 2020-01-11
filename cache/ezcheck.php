@@ -22,10 +22,10 @@ function ezcheck_cache_configurer($plugin) {
 		'sous_dossier'    => false,
 		'nom_obligatoire' => array('nom'),
 		'nom_facultatif'  => array(),
-		'extension'       => '.php',
-		'securisation'    => true,
-		'serialisation'   => true,
-		'decodage'        => false,
+		'extension'       => '.json',
+		'securisation'    => false,
+		'serialisation'   => false,
+		'decodage'        => true,
 		'separateur'      => '-',
 		'conservation'    => 0
 	);
